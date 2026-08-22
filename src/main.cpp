@@ -2,10 +2,20 @@
 
 #include "raylib.h"
 
+void DrawLine(int aX, int aY, int bX, int bY, Color* aFrameBuffer, Color aColor);
+
+struct triangle
+{
+   int a[2];
+   int b[2];
+   int c[2];
+};
+
+const int viewHeight = 720;
+const int viewWidth = 1080;
+
 int main()
 {
-   const int viewHeight = 720;
-   const int viewWidth = 1080;
    std::string title = "Software Rendered BAYBEE!!!";
 
    SetTargetFPS(60);
@@ -14,6 +24,14 @@ int main()
    Image screenImage{ frameBuffer, viewWidth, viewHeight, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
    Texture2D screen = LoadTextureFromImage(screenImage);
    uint8_t globalAlpha = 255;
+
+   // create one hardcoded triangle
+   triangle try1{
+      {14, 43},
+      {567, 567},
+      {1010, 700}
+   };
+
    while (!WindowShouldClose())
    {
       globalAlpha--;
@@ -21,12 +39,16 @@ int main()
       {
          for (unsigned int j = 0; j < viewHeight; j++)
          {
-            
-            unsigned int index = i + j * viewWidth;
-            frameBuffer[index].r = static_cast<uint8_t>(255 * i / viewWidth);
-            frameBuffer[index].g = static_cast<uint8_t>(255 * j / viewHeight);
-            frameBuffer[index].b = globalAlpha;
-            frameBuffer[index].a = globalAlpha;
+            // start by rasterizing the border of the triangle
+            DrawLine(try1.a[0], try1.a[1], try1.b[0], try1.b[1], frameBuffer, RED);
+            DrawLine(try1.b[0], try1.b[1], try1.c[0], try1.c[1], frameBuffer, GREEN);
+            DrawLine(try1.c[0], try1.c[1], try1.a[0], try1.a[1], frameBuffer, BLUE);
+
+            //unsigned int index = i + j * viewWidth;
+            //frameBuffer[index].r = static_cast<uint8_t>(255 * i / viewWidth);
+            //frameBuffer[index].g = static_cast<uint8_t>(255 * j / viewHeight);
+            //frameBuffer[index].b = globalAlpha;
+            //frameBuffer[index].a = 255;
             
          }
       }
@@ -34,8 +56,6 @@ int main()
       BeginDrawing();
       {
          DrawTexture(screen, 0, 0, RAYWHITE);
-         DrawText("Hello World", 128, 126, 32, BLACK);
-         
       }
       EndDrawing();
 
@@ -46,4 +66,14 @@ int main()
    CloseWindow();
 
    return 0;
+}
+
+void DrawLine(int aX, int aY, int bX, int bY, Color* aFrameBuffer, Color aColor)
+{
+   for (float t = 0; t <= 1.0; t += 0.001)
+   {
+      int x = aX + t * (bX - aX);
+      int y = aY + t * (bY - aY);
+      aFrameBuffer[x + y * viewWidth] = aColor;
+   }
 }
