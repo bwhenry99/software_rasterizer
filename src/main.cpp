@@ -28,7 +28,7 @@ int main()
    // create one hardcoded triangle
    triangle try1{
       {14, 43},
-      {567, 567},
+      {24, 567},
       {1010, 700}
    };
 
@@ -70,10 +70,29 @@ int main()
 
 void DrawLine(int aX, int aY, int bX, int bY, Color* aFrameBuffer, Color aColor)
 {
-   for (float t = 0; t <= 1.0; t += 0.001)
+   bool steep = false;
+   if (abs(bY - aY) > abs(bX - aX))
    {
-      int x = aX + t * (bX - aX);
-      int y = aY + t * (bY - aY);
-      aFrameBuffer[x + y * viewWidth] = aColor;
+      std::swap(aX, aY);
+      std::swap(bX, bY);
+      steep = true;
+   }
+   if (aX > bX)
+   {
+      std::swap(aX, bX);
+      std::swap(aY, bY);
+   }
+
+   for (int x = aX; x <= bX; x++)
+   {
+      int y = aY + (float(x - aX) / float(bX - aX)) * (bY - aY);
+      if (steep)
+      {
+         aFrameBuffer[y + x * viewWidth] = aColor;
+      }
+      else
+      {
+         aFrameBuffer[x + y * viewWidth] = aColor;
+      }
    }
 }
