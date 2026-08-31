@@ -3,6 +3,8 @@
 
 #include "raylib.h"
 
+#include "Model.hpp"
+
 void DrawLine(int aX, int aY, int bX, int bY, Color* aFrameBuffer, Color aColor);
 
 struct triangle
@@ -36,6 +38,8 @@ int main()
    //   {24, 567},
    //   {1010, 700}
    //};
+
+   swrast::Model cube("../resources/Cube.obj");
 
    int xTriBounds[2] = {10, viewWidth - 10};
    int yTriBounds[2] = {10, viewHeight - 10};
