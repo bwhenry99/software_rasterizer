@@ -20,6 +20,7 @@ triangle GenerateRandomTriangle(int xBound[2], int yBound[2], std::default_rando
 
 const int viewHeight = 720;
 const int viewWidth = 1080;
+const int pixelsPerUnit = 200;
 
 int main()
 {
@@ -40,6 +41,19 @@ int main()
    //};
 
    swrast::Model cube("../resources/Cube.obj");
+   triangle* tris = new triangle[cube.mFaces.size()];
+   //project cube to screen space
+   for (size_t i = 0; i < cube.mFaces.size(); i++)
+   {
+      size_t vertexIndices[3] = { cube.mFaces[i].vertices[0], cube.mFaces[i].vertices[1], cube.mFaces[i].vertices[2] };
+      int x1 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[0]][0])) + viewWidth / 2);
+      int y1 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[0]][1])) + viewHeight /2);
+      int x2 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[1]][0])) + viewWidth / 2);
+      int y2 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[1]][1])) + viewHeight / 2);
+      int x3 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[2]][0])) + viewWidth / 2);
+      int y3 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[2]][1])) + viewHeight / 2);
+      tris[i] = { {x1, y1}, {x2, y2}, {x3, y3} };
+   }
 
    int xTriBounds[2] = {10, viewWidth - 10};
    int yTriBounds[2] = {10, viewHeight - 10};
@@ -51,32 +65,40 @@ int main()
       //DrawLine(tri.b[0], tri.b[1], tri.c[0], tri.c[1], frameBuffer, GREEN);
       //DrawLine(tri.c[0], tri.c[1], tri.a[0], tri.a[1], frameBuffer, BLUE);
 
+      for (size_t k = 0; k < cube.mFaces.size(); k++)
+      {
+         DrawLine(tris[k].a[0], tris[k].a[1], tris[k].b[0], tris[k].b[1], frameBuffer, RED);
+         DrawLine(tris[k].b[0], tris[k].b[1], tris[k].c[0], tris[k].c[1], frameBuffer, RED);
+         DrawLine(tris[k].c[0], tris[k].c[1], tris[k].a[0], tris[k].a[1], frameBuffer, RED);
+      }
+
       for (unsigned int i = 0; i < viewWidth; i++)
       {
          for (unsigned int j = 0; j < viewHeight; j++)
          {
-            if (IsInTriangle(i, j, tri))
-            {
-               unsigned int index = i + j * viewWidth;
-               frameBuffer[index].r = static_cast<uint8_t>(255 * i / viewWidth);
-               frameBuffer[index].g = static_cast<uint8_t>(255 * j / viewHeight);
-               frameBuffer[index].b = 0;
-               frameBuffer[index].a = 255;
-            }
-            else
-            {
-               unsigned int index = i + j * viewWidth;
-               frameBuffer[index].r = 0;
-               frameBuffer[index].g = 0;
-               frameBuffer[index].b = 0;
-               frameBuffer[index].a = 255;
-            }
+            //if (IsInTriangle(i, j, tri))
+            //{
+            //   unsigned int index = i + j * viewWidth;
+            //   frameBuffer[index].r = static_cast<uint8_t>(255 * i / viewWidth);
+            //   frameBuffer[index].g = static_cast<uint8_t>(255 * j / viewHeight);
+            //   frameBuffer[index].b = 0;
+            //   frameBuffer[index].a = 255;
+            //}
+            //else
+            //{
+            //   unsigned int index = i + j * viewWidth;
+            //   frameBuffer[index].r = 0;
+            //   frameBuffer[index].g = 0;
+            //   frameBuffer[index].b = 0;
+            //   frameBuffer[index].a = 255;
+            //}
+
          }
       }
 
-      DrawLine(tri.a[0], tri.a[1], tri.b[0], tri.b[1], frameBuffer, WHITE);
-      DrawLine(tri.b[0], tri.b[1], tri.c[0], tri.c[1], frameBuffer, WHITE);
-      DrawLine(tri.c[0], tri.c[1], tri.a[0], tri.a[1], frameBuffer, WHITE);
+      //DrawLine(tri.a[0], tri.a[1], tri.b[0], tri.b[1], frameBuffer, WHITE);
+      //DrawLine(tri.b[0], tri.b[1], tri.c[0], tri.c[1], frameBuffer, WHITE);
+      //DrawLine(tri.c[0], tri.c[1], tri.a[0], tri.a[1], frameBuffer, WHITE);
 
       UpdateTexture(screen, frameBuffer);
       BeginDrawing();
@@ -96,6 +118,12 @@ int main()
 
 void DrawLine(int aX, int aY, int bX, int bY, Color* aFrameBuffer, Color aColor)
 {
+   if (aX == bX && aY == bY)
+   {
+      // if the two points are on the same pixel just return
+      //maybe I should draw that pixel?
+      return;
+   }
    bool steep = false;
    if (abs(bY - aY) > abs(bX - aX))
    {
@@ -115,10 +143,14 @@ void DrawLine(int aX, int aY, int bX, int bY, Color* aFrameBuffer, Color aColor)
       if (steep)
       {
          aFrameBuffer[y + x * viewWidth] = aColor;
+         aFrameBuffer[y + x * viewWidth + 1] = aColor;
+         aFrameBuffer[y + x * viewWidth - 1] = aColor;
       }
       else
       {
          aFrameBuffer[x + y * viewWidth] = aColor;
+         aFrameBuffer[x + (y + 1) * viewWidth] = aColor;
+         aFrameBuffer[x + (y - 1) * viewWidth] = aColor;
       }
    }
 }

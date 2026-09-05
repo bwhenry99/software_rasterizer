@@ -22,10 +22,6 @@ swrast::Model::~Model()
       delete mNormals[i];
    }
 
-   for (size_t i = 0; i < mFaces.size(); i++)
-   {
-      delete mFaces[i].vertices;
-   }
 }
 
 void swrast::Model::LoadFromFile(std::string aFileName)
@@ -90,14 +86,14 @@ void swrast::Model::LoadFromFile(std::string aFileName)
             continue; //just skip for now
          }
          
-         mFaces.push_back({ {vertexIndicies[0], vertexIndicies[1], vertexIndicies[2]}, 0 });
+         mFaces.push_back({ {vertexIndicies[0] - 1, vertexIndicies[1] - 1, vertexIndicies[2] - 1}, 0 });
 
          if (vertexIndicies.size() > 3)
          {
             for (size_t i = 3; i < vertexIndicies.size(); i++)
             {
                // this is kind of a nested nightmare...
-               mFaces.push_back({ {vertexIndicies[0], vertexIndicies[i - 1], vertexIndicies[i]}, 0 });
+               mFaces.push_back({ {vertexIndicies[0] - 1, vertexIndicies[i - 1] - 1, vertexIndicies[i] - 1}, 0 });
             }
          }
       }

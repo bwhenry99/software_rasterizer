@@ -19,7 +19,7 @@ public:
    ~Model();
 
    void LoadFromFile(std::string aFile);
-private:
+//private:
    std::vector<float*> mVertices;
    std::vector<float*> mNormals;
    std::vector<face>   mFaces;
