@@ -41,31 +41,49 @@ int main()
    //};
 
    swrast::Model cube("../resources/Cube.obj");
-   triangle* tris = new triangle[cube.mFaces.size()];
-   //project cube to screen space
-   for (size_t i = 0; i < cube.mFaces.size(); i++)
-   {
-      size_t vertexIndices[3] = { cube.mFaces[i].vertices[0], cube.mFaces[i].vertices[1], cube.mFaces[i].vertices[2] };
-      int x1 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[0]][0])) + viewWidth / 2);
-      int y1 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[0]][1])) + viewHeight /2);
-      int x2 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[1]][0])) + viewWidth / 2);
-      int y2 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[1]][1])) + viewHeight / 2);
-      int x3 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[2]][0])) + viewWidth / 2);
-      int y3 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[2]][1])) + viewHeight / 2);
-      tris[i] = { {x1, y1}, {x2, y2}, {x3, y3} };
-   }
+   size_t numberOfFaces = cube.mFaces.size();
+   triangle* tris = new triangle[numberOfFaces];
+   float yaw = 0.0f;
 
    int xTriBounds[2] = {10, viewWidth - 10};
    int yTriBounds[2] = {10, viewHeight - 10};
    while (!WindowShouldClose())
    {
-      triangle tri = GenerateRandomTriangle(xTriBounds, yTriBounds, randEngine);
+      for (unsigned int i = 0; i < viewWidth; i++)
+      {
+         for (unsigned int j = 0; j < viewHeight; j++)
+         {
+            unsigned int index = i + j * viewWidth;
+            frameBuffer[index].r = 245;
+            frameBuffer[index].g = 245;
+            frameBuffer[index].b = 245;
+            frameBuffer[index].a = 255;
+         }
+      }
+      //triangle tri = GenerateRandomTriangle(xTriBounds, yTriBounds, randEngine);
       // start by rasterizing the border of the triangle
       //DrawLine(tri.a[0], tri.a[1], tri.b[0], tri.b[1], frameBuffer, RED);
       //DrawLine(tri.b[0], tri.b[1], tri.c[0], tri.c[1], frameBuffer, GREEN);
       //DrawLine(tri.c[0], tri.c[1], tri.a[0], tri.a[1], frameBuffer, BLUE);
 
-      for (size_t k = 0; k < cube.mFaces.size(); k++)
+      yaw += 1.0f;
+      cube.SetYawDeg(yaw);
+      cube.UpdateOrientation();
+
+      //project cube to screen space
+      for (size_t i = 0; i < numberOfFaces; i++)
+      {
+         size_t vertexIndices[3] = { cube.mFaces[i].vertices[0], cube.mFaces[i].vertices[1], cube.mFaces[i].vertices[2] };
+         int x1 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[0]][0] / (cube.mVertices[vertexIndices[0]][2] + 2))) + viewWidth / 2);
+         int y1 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[0]][1] / (cube.mVertices[vertexIndices[0]][2] + 2))) + viewHeight / 2);
+         int x2 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[1]][0] / (cube.mVertices[vertexIndices[1]][2] + 2))) + viewWidth / 2);
+         int y2 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[1]][1] / (cube.mVertices[vertexIndices[1]][2] + 2))) + viewHeight / 2);
+         int x3 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[2]][0] / (cube.mVertices[vertexIndices[2]][2] + 2))) + viewWidth / 2);
+         int y3 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[2]][1] / (cube.mVertices[vertexIndices[2]][2] + 2))) + viewHeight / 2);
+         tris[i] = { {x1, y1}, {x2, y2}, {x3, y3} };
+      }
+
+      for (size_t k = 0; k < numberOfFaces; k++)
       {
          DrawLine(tris[k].a[0], tris[k].a[1], tris[k].b[0], tris[k].b[1], frameBuffer, RED);
          DrawLine(tris[k].b[0], tris[k].b[1], tris[k].c[0], tris[k].c[1], frameBuffer, RED);

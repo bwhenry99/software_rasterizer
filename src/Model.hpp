@@ -19,8 +19,12 @@ public:
    ~Model();
 
    void LoadFromFile(std::string aFile);
+   void SetYawDeg(float aYaw);
+   void UpdateOrientation();
 //private:
+   std::vector<float*> mStaticVertices;
    std::vector<float*> mVertices;
+   float3              mRotation = { 0.0, 0.0, 0.0 };
    std::vector<float*> mNormals;
    std::vector<face>   mFaces;
 };

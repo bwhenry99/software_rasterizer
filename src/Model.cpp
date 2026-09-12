@@ -5,6 +5,18 @@
 #include <sstream>
 #include <string_view>
 
+float ClampAngle0_360(float aAngle)
+{
+   float angle = std::fmod(aAngle, 360.0f);
+   if (angle < 0.0f)
+   {
+      angle += 360.0;
+   }
+   return angle;
+}
+
+constexpr float cPI = 3.14159f;
+
 swrast::Model::Model(std::string aFileName)
 {
    LoadFromFile(aFileName);
@@ -12,6 +24,11 @@ swrast::Model::Model(std::string aFileName)
 
 swrast::Model::~Model()
 {
+   for (size_t i = 0; i < mStaticVertices.size(); i++)
+   {
+      delete mStaticVertices[i];
+   }
+
    for (size_t i = 0; i < mVertices.size(); i++)
    {
       delete mVertices[i];
@@ -21,7 +38,6 @@ swrast::Model::~Model()
    {
       delete mNormals[i];
    }
-
 }
 
 void swrast::Model::LoadFromFile(std::string aFileName)
@@ -48,7 +64,8 @@ void swrast::Model::LoadFromFile(std::string aFileName)
          // parse out vertex point
          float x, y, z;
          stream >> x >> y >> z;
-         mVertices.push_back(new float3{x,y,z});
+         mStaticVertices.push_back(new float3{x,y,z});
+         mVertices.push_back(new float3{ x,y,z });
          continue;
       }
 
@@ -97,5 +114,20 @@ void swrast::Model::LoadFromFile(std::string aFileName)
             }
          }
       }
+   }
+}
+
+void swrast::Model::SetYawDeg(float aYaw)
+{
+   mRotation[1] = ClampAngle0_360(aYaw) / (2 * cPI);
+}
+
+void swrast::Model::UpdateOrientation()
+{
+   // TODO I'm only implements yaw right now
+   for (size_t i = 0; i < mStaticVertices.size(); i++)
+   {
+      mVertices[i][0] =  mStaticVertices[i][0] * cos(mRotation[1]) + mStaticVertices[i][2] * sin(mRotation[1]);
+      mVertices[i][2] = -mStaticVertices[i][0] * sin(mRotation[1]) + mStaticVertices[i][2] * cos(mRotation[1]);
    }
 }
