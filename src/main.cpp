@@ -14,6 +14,9 @@ struct triangle
    int c[2];
 };
 
+void DrawTriangle(triangle aTriangle, Color* aFrameBuffer, Color aColor);
+Color colors[8] = { RED, GREEN, BLUE, SKYBLUE, YELLOW, MAGENTA, PURPLE, ORANGE };
+
 bool IsInTriangle(int aX, int aY, triangle aTriangle);
 int DotProduct(int x1, int y1, int x2, int y2);
 triangle GenerateRandomTriangle(int xBound[2], int yBound[2], std::default_random_engine& aRandEngine);
@@ -26,6 +29,7 @@ int main()
 {
    std::default_random_engine randEngine;
    std::string title = "Software Rendered BAYBEE!!!";
+   std::uniform_int_distribution<int> colorRand(0, 7);
 
    SetTargetFPS(10);
    InitWindow(viewWidth, viewHeight, title.c_str());
@@ -43,7 +47,12 @@ int main()
    swrast::Model cube("../resources/Cube.obj");
    size_t numberOfFaces = cube.mFaces.size();
    triangle* tris = new triangle[numberOfFaces];
-   float yaw = 0.0f;
+   Color* triColors = new Color[numberOfFaces];
+   for (size_t i = 0; i < numberOfFaces; i++)
+   {
+      triColors[i] = colors[colorRand(randEngine)];
+   }
+   float yaw = 50.0f;
 
    int xTriBounds[2] = {10, viewWidth - 10};
    int yTriBounds[2] = {10, viewHeight - 10};
@@ -83,17 +92,21 @@ int main()
          tris[i] = { {x1, y1}, {x2, y2}, {x3, y3} };
       }
 
-      for (size_t k = 0; k < numberOfFaces; k++)
+      for (unsigned int k = 0; k < numberOfFaces; k++)
       {
-         DrawLine(tris[k].a[0], tris[k].a[1], tris[k].b[0], tris[k].b[1], frameBuffer, RED);
-         DrawLine(tris[k].b[0], tris[k].b[1], tris[k].c[0], tris[k].c[1], frameBuffer, RED);
-         DrawLine(tris[k].c[0], tris[k].c[1], tris[k].a[0], tris[k].a[1], frameBuffer, RED);
+         DrawTriangle(tris[k], frameBuffer, triColors[k]);
       }
+      //for (size_t k = 0; k < numberOfFaces; k++)
+      //{
+      //   DrawLine(tris[k].a[0], tris[k].a[1], tris[k].b[0], tris[k].b[1], frameBuffer, BLACK);
+      //   DrawLine(tris[k].b[0], tris[k].b[1], tris[k].c[0], tris[k].c[1], frameBuffer, BLACK);
+      //   DrawLine(tris[k].c[0], tris[k].c[1], tris[k].a[0], tris[k].a[1], frameBuffer, BLACK);
+      //}
 
-      for (unsigned int i = 0; i < viewWidth; i++)
-      {
-         for (unsigned int j = 0; j < viewHeight; j++)
-         {
+      //for (unsigned int i = 0; i < viewWidth; i++)
+      //{
+      //   for (unsigned int j = 0; j < viewHeight; j++)
+      //   {
             //if (IsInTriangle(i, j, tri))
             //{
             //   unsigned int index = i + j * viewWidth;
@@ -111,8 +124,8 @@ int main()
             //   frameBuffer[index].a = 255;
             //}
 
-         }
-      }
+      //   }
+      //}
 
       //DrawLine(tri.a[0], tri.a[1], tri.b[0], tri.b[1], frameBuffer, WHITE);
       //DrawLine(tri.b[0], tri.b[1], tri.c[0], tri.c[1], frameBuffer, WHITE);
@@ -195,8 +208,8 @@ bool IsInTriangle(int aX, int aY, triangle aTriangle)
    
    // dot product tells us if point is right or left of edge based on sign
    // if point is either left of all edges or right of all edges it is inside the triangle
-   if ((dots[0] <= 0 && dots[1] <= 0 && dots[2] <= 0) ||
-       (dots[0] > 0 && dots[1] > 0 && dots[2] > 0))
+   if ((dots[0] <= 0 && dots[1] <= 0 && dots[2] <= 0) /* || 
+       (dots[0] > 0 && dots[1] > 0 && dots[2] > 0)*/)
    {
       return true;
    }
@@ -220,4 +233,23 @@ triangle GenerateRandomTriangle(int xBound[2], int yBound[2], std::default_rando
       {xDist(aRandEngine), yDist(aRandEngine)}
    };
    return tri;
+}
+
+void DrawTriangle(triangle aTriangle,Color* aFrameBuffer,  Color aColor)
+{
+   int xBounds[2] = { std::min({aTriangle.a[0], aTriangle.b[0], aTriangle.c[0]}),
+                      std::max({aTriangle.a[0], aTriangle.b[0], aTriangle.c[0]}) };
+   int yBounds[2] = { std::min({aTriangle.a[1], aTriangle.b[1], aTriangle.c[1]}),
+                      std::max({aTriangle.a[1], aTriangle.b[1], aTriangle.c[1]}) };
+
+   for (int i = xBounds[0]; i <= xBounds[1]; i++)
+   {
+      for (int j = yBounds[0]; j <= yBounds[1]; j++)
+      {
+         if (IsInTriangle(i, j, aTriangle))
+         {
+            aFrameBuffer[i + j * viewWidth] = aColor;
+         }
+      }
+   }
 }

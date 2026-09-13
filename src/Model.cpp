@@ -119,7 +119,7 @@ void swrast::Model::LoadFromFile(std::string aFileName)
 
 void swrast::Model::SetYawDeg(float aYaw)
 {
-   mRotation[1] = ClampAngle0_360(aYaw) / (2 * cPI);
+   mRotation[1] = cPI * ClampAngle0_360(aYaw) / 180.0f;
 }
 
 void swrast::Model::UpdateOrientation()
