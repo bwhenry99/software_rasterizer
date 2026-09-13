@@ -24,6 +24,8 @@ triangle GenerateRandomTriangle(int xBound[2], int yBound[2], std::default_rando
 const int viewHeight = 720;
 const int viewWidth = 1080;
 const int pixelsPerUnit = 200;
+float yHalfFOV = 45.0f / 360.0f * 2.0 * 3.14159;
+float xHalfFOV = atanf(float(viewWidth)/float(viewHeight) * tanf(yHalfFOV));
 
 int main()
 {
@@ -52,7 +54,7 @@ int main()
    {
       triColors[i] = colors[colorRand(randEngine)];
    }
-   float yaw = 50.0f;
+   float yaw = 0.0f;
 
    int xTriBounds[2] = {10, viewWidth - 10};
    int yTriBounds[2] = {10, viewHeight - 10};
@@ -83,13 +85,13 @@ int main()
       for (size_t i = 0; i < numberOfFaces; i++)
       {
          size_t vertexIndices[3] = { cube.mFaces[i].vertices[0], cube.mFaces[i].vertices[1], cube.mFaces[i].vertices[2] };
-         int x1 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[0]][0] / (cube.mVertices[vertexIndices[0]][2] + 2))) + viewWidth / 2);
-         int y1 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[0]][1] / (cube.mVertices[vertexIndices[0]][2] + 2))) + viewHeight / 2);
-         int x2 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[1]][0] / (cube.mVertices[vertexIndices[1]][2] + 2))) + viewWidth / 2);
-         int y2 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[1]][1] / (cube.mVertices[vertexIndices[1]][2] + 2))) + viewHeight / 2);
-         int x3 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[2]][0] / (cube.mVertices[vertexIndices[2]][2] + 2))) + viewWidth / 2);
-         int y3 = static_cast<int>(((pixelsPerUnit) * (cube.mVertices[vertexIndices[2]][1] / (cube.mVertices[vertexIndices[2]][2] + 2))) + viewHeight / 2);
-         tris[i] = { {x1, y1}, {x2, y2}, {x3, y3} };
+         int x1 = static_cast<int>(viewWidth  * ((cube.mVertices[vertexIndices[0]][0] / ((cube.mVertices[vertexIndices[0]][2] + 5) * (2 * tanf(xHalfFOV))))) + viewWidth / 2);
+         int y1 = static_cast<int>(viewHeight * ((cube.mVertices[vertexIndices[0]][1] / ((cube.mVertices[vertexIndices[0]][2] + 5) * (2 * tanf(yHalfFOV))))) + viewHeight / 2);
+         int x2 = static_cast<int>(viewWidth  * ((cube.mVertices[vertexIndices[1]][0] / ((cube.mVertices[vertexIndices[1]][2] + 5) * (2 * tanf(xHalfFOV))))) + viewWidth / 2);
+         int y2 = static_cast<int>(viewHeight * ((cube.mVertices[vertexIndices[1]][1] / ((cube.mVertices[vertexIndices[1]][2] + 5) * (2 * tanf(yHalfFOV))))) + viewHeight / 2);
+         int x3 = static_cast<int>(viewWidth  * ((cube.mVertices[vertexIndices[2]][0] / ((cube.mVertices[vertexIndices[2]][2] + 5) * (2 * tanf(xHalfFOV))))) + viewWidth / 2);
+         int y3 = static_cast<int>(viewHeight * ((cube.mVertices[vertexIndices[2]][1] / ((cube.mVertices[vertexIndices[2]][2] + 5) * (2 * tanf(yHalfFOV))))) + viewHeight / 2);
+         tris[i] = { {x1, y1}, {x2, y2}, {x3, y3} };                                                                                
       }
 
       for (unsigned int k = 0; k < numberOfFaces; k++)
