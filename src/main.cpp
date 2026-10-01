@@ -1,7 +1,9 @@
 #include <iostream>
 #include <random>
 
+#include "imgui.h"
 #include "raylib.h"
+#include "rlimgui.h"
 
 #include "Model.hpp"
 
@@ -26,6 +28,7 @@ const int viewWidth = 1080;
 const int pixelsPerUnit = 200;
 float yHalfFOV = 45.0f / 360.0f * 2.0 * 3.14159;
 float xHalfFOV = atanf(float(viewWidth)/float(viewHeight) * tanf(yHalfFOV));
+float modelDistance = 5.0f;
 
 int main()
 {
@@ -33,8 +36,12 @@ int main()
    std::string title = "Software Rendered BAYBEE!!!";
    std::uniform_int_distribution<int> colorRand(0, 7);
 
-   SetTargetFPS(10);
    InitWindow(viewWidth, viewHeight, title.c_str());
+   rlImGuiSetup(true);
+   ImGuiIO& io = ImGui::GetIO();
+   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+   SetTargetFPS(60);
+
    Color*  frameBuffer = new Color[viewHeight * viewWidth];
    Image screenImage{ frameBuffer, viewWidth, viewHeight, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
    Texture2D screen = LoadTextureFromImage(screenImage);
@@ -46,7 +53,7 @@ int main()
    //   {1010, 700}
    //};
 
-   swrast::Model cube("../resources/Cube.obj");
+   swrast::Model cube("../resources/Monkey.obj");
    size_t numberOfFaces = cube.mFaces.size();
    triangle* tris = new triangle[numberOfFaces];
    Color* triColors = new Color[numberOfFaces];
@@ -77,20 +84,22 @@ int main()
       //DrawLine(tri.b[0], tri.b[1], tri.c[0], tri.c[1], frameBuffer, GREEN);
       //DrawLine(tri.c[0], tri.c[1], tri.a[0], tri.a[1], frameBuffer, BLUE);
 
-      yaw += 1.0f;
+      yaw += 5.0f;
       cube.SetYawDeg(yaw);
+      cube.SetPitchDeg(yaw);
+      cube.SetRollDeg(yaw);
       cube.UpdateOrientation();
 
       //project cube to screen space
       for (size_t i = 0; i < numberOfFaces; i++)
       {
          size_t vertexIndices[3] = { cube.mFaces[i].vertices[0], cube.mFaces[i].vertices[1], cube.mFaces[i].vertices[2] };
-         int x1 = static_cast<int>(viewWidth  * ((cube.mVertices[vertexIndices[0]][0] / ((cube.mVertices[vertexIndices[0]][2] + 5) * (2 * tanf(xHalfFOV))))) + viewWidth / 2);
-         int y1 = static_cast<int>(viewHeight * ((cube.mVertices[vertexIndices[0]][1] / ((cube.mVertices[vertexIndices[0]][2] + 5) * (2 * tanf(yHalfFOV))))) + viewHeight / 2);
-         int x2 = static_cast<int>(viewWidth  * ((cube.mVertices[vertexIndices[1]][0] / ((cube.mVertices[vertexIndices[1]][2] + 5) * (2 * tanf(xHalfFOV))))) + viewWidth / 2);
-         int y2 = static_cast<int>(viewHeight * ((cube.mVertices[vertexIndices[1]][1] / ((cube.mVertices[vertexIndices[1]][2] + 5) * (2 * tanf(yHalfFOV))))) + viewHeight / 2);
-         int x3 = static_cast<int>(viewWidth  * ((cube.mVertices[vertexIndices[2]][0] / ((cube.mVertices[vertexIndices[2]][2] + 5) * (2 * tanf(xHalfFOV))))) + viewWidth / 2);
-         int y3 = static_cast<int>(viewHeight * ((cube.mVertices[vertexIndices[2]][1] / ((cube.mVertices[vertexIndices[2]][2] + 5) * (2 * tanf(yHalfFOV))))) + viewHeight / 2);
+         int x1 = static_cast<int>(viewWidth  * ((cube.mVertices[vertexIndices[0]][0] / ((cube.mVertices[vertexIndices[0]][2] + modelDistance) * (2 * tanf(xHalfFOV))))) + viewWidth / 2);
+         int y1 = static_cast<int>(viewHeight * ((cube.mVertices[vertexIndices[0]][1] / ((cube.mVertices[vertexIndices[0]][2] + modelDistance) * (2 * tanf(yHalfFOV))))) + viewHeight / 2);
+         int x2 = static_cast<int>(viewWidth  * ((cube.mVertices[vertexIndices[1]][0] / ((cube.mVertices[vertexIndices[1]][2] + modelDistance) * (2 * tanf(xHalfFOV))))) + viewWidth / 2);
+         int y2 = static_cast<int>(viewHeight * ((cube.mVertices[vertexIndices[1]][1] / ((cube.mVertices[vertexIndices[1]][2] + modelDistance) * (2 * tanf(yHalfFOV))))) + viewHeight / 2);
+         int x3 = static_cast<int>(viewWidth  * ((cube.mVertices[vertexIndices[2]][0] / ((cube.mVertices[vertexIndices[2]][2] + modelDistance) * (2 * tanf(xHalfFOV))))) + viewWidth / 2);
+         int y3 = static_cast<int>(viewHeight * ((cube.mVertices[vertexIndices[2]][1] / ((cube.mVertices[vertexIndices[2]][2] + modelDistance) * (2 * tanf(yHalfFOV))))) + viewHeight / 2);
          tris[i] = { {x1, y1}, {x2, y2}, {x3, y3} };                                                                                
       }
 
@@ -134,15 +143,29 @@ int main()
       //DrawLine(tri.c[0], tri.c[1], tri.a[0], tri.a[1], frameBuffer, WHITE);
 
       UpdateTexture(screen, frameBuffer);
+
       BeginDrawing();
-      {
-         DrawTexture(screen, 0, 0, RAYWHITE);
-      }
+      //ClearBackground(RAYWHITE);
+      DrawTexture(screen, 0, 0, RAYWHITE);
+      
+      rlImGuiBegin();
+
+      // docking config 
+      /*ImGui::PushStyleColor(ImGuiCol_WindowBg, {});
+      ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, {});
+      ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+      ImGui::PopStyleColor(2);*/
+
+      ImGui::Begin("Controls");
+      ImGui::Text("WORDS");
+      ImGui::SliderFloat("model distance", &modelDistance, 0.0f, 50.0f, "%.1f");
+      ImGui::End();
+      
+      rlImGuiEnd();
       EndDrawing();
-
-
    }
    UnloadTexture(screen);
+   rlImGuiShutdown();
    delete frameBuffer;
    CloseWindow();
 

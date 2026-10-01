@@ -20,6 +20,8 @@ public:
 
    void LoadFromFile(std::string aFile);
    void SetYawDeg(float aYaw);
+   void SetPitchDeg(float aPitch);
+   void SetRollDeg(float aRoll);
    void UpdateOrientation();
 //private:
    std::vector<float*> mStaticVertices;

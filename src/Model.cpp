@@ -119,15 +119,53 @@ void swrast::Model::LoadFromFile(std::string aFileName)
 
 void swrast::Model::SetYawDeg(float aYaw)
 {
-   mRotation[1] = cPI * ClampAngle0_360(aYaw) / 180.0f;
+   mRotation[2] = cPI * ClampAngle0_360(aYaw) / 180.0f;
+}
+
+void swrast::Model::SetPitchDeg(float aPitch)
+{
+   mRotation[1] = cPI * ClampAngle0_360(aPitch) / 180.0f;
+}
+
+void swrast::Model::SetRollDeg(float aRoll)
+{
+   mRotation[0] = cPI * ClampAngle0_360(aRoll) / 180.0f;
 }
 
 void swrast::Model::UpdateOrientation()
 {
    // TODO I'm only implements yaw right now
+   //for (size_t i = 0; i < mStaticVertices.size(); i++)
+   //{
+   //   mVertices[i][0] =  mStaticVertices[i][0] * cos(mRotation[2]) + mStaticVertices[i][2] * sin(mRotation[2]);
+   //   mVertices[i][2] = -mStaticVertices[i][0] * sin(mRotation[2]) + mStaticVertices[i][2] * cos(mRotation[2]);
+   //}
+
+   //for (size_t i = 0; i < mStaticVertices.size(); i++)
+   //{
+   //   mVertices[i][1] = mStaticVertices[i][1] * cos(mRotation[1]) + mStaticVertices[i][2] * sin(mRotation[1]);
+   //   mVertices[i][2] *= -mStaticVertices[i][1] * sin(mRotation[1]) + mStaticVertices[i][2] * cos(mRotation[1]);
+   //}
+
+   //for (size_t i = 0; i < mStaticVertices.size(); i++)
+   //{
+   //   mVertices[i][0] *= mStaticVertices[i][0] * cos(mRotation[0]) + mStaticVertices[i][1] * sin(mRotation[0]);
+   //   mVertices[i][1] *= -mStaticVertices[i][0] * sin(mRotation[0]) + mStaticVertices[i][1] * cos(mRotation[0]);
+   //}
+
    for (size_t i = 0; i < mStaticVertices.size(); i++)
    {
-      mVertices[i][0] =  mStaticVertices[i][0] * cos(mRotation[1]) + mStaticVertices[i][2] * sin(mRotation[1]);
-      mVertices[i][2] = -mStaticVertices[i][0] * sin(mRotation[1]) + mStaticVertices[i][2] * cos(mRotation[1]);
+      mVertices[i][0] =  mStaticVertices[i][0] * cos(mRotation[1]) * cos(mRotation[2]) +
+                         mStaticVertices[i][1] * (sin(mRotation[0]) * sin(mRotation[1]) * cos(mRotation[2]) - cos(mRotation[0]) * sin(mRotation[2])) +
+                         mStaticVertices[i][2] * (cos(mRotation[0]) * sin(mRotation[1]) * cos(mRotation[2]) + sin(mRotation[0]) * sin(mRotation[2]));
+
+      mVertices[i][1] =  mStaticVertices[i][0] * cos(mRotation[1]) * sin(mRotation[2]) +
+                         mStaticVertices[i][1] * (sin(mRotation[0]) * sin(mRotation[1]) * sin(mRotation[2]) + cos(mRotation[0]) * cos(mRotation[2])) +
+                         mStaticVertices[i][2] * (cos(mRotation[0]) * sin(mRotation[1]) * sin(mRotation[2]) - sin(mRotation[0]) * cos(mRotation[2]));
+
+      mVertices[i][2] = -mStaticVertices[i][0] * sin(mRotation[1]) +
+                         mStaticVertices[i][1] * sin(mRotation[0]) * cos(mRotation[1]) +
+                         mStaticVertices[i][2] * cos(mRotation[1]) * cos(mRotation[0]);
    }
+
 }
